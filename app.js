@@ -1,6 +1,18 @@
+const { DB_HOST, DB_USER, DB_PASSWORD } = require("./config");
 const express = require("express");
+const mongoose = require("mongoose");
 
 const app = express();
+
+mongoose
+  .connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_HOST}`)
+  .then(() => {
+    console.log("Successfully connected to MongoDB Atlas");
+  })
+  .catch((error) => {
+    console.log("Unable to connect to MongoDB Atlas");
+    console.error(error);
+  });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
