@@ -1,12 +1,15 @@
 const { DB_HOST, DB_NAME, DB_USER, DB_PASSWORD } = require("./config");
 const express = require("express");
 const mongoose = require("mongoose");
-const Thing = require("./models/thing");
+const stuffRoutes = require("./routes/stuff");
 
 const app = express();
 
 mongoose
-  .connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`)
+  .connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("Successfully connected to MongoDB Atlas");
   })
@@ -31,78 +34,6 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post("/api/stuff", (req, res, next) => {
-  const thing = new Thing({
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-    price: req.body.price,
-    userId: req.body.userId,
-  });
-
-  thing
-    .save()
-    .then(() => {
-      res.status(201).json({
-        message: "Post saved successfully",
-      });
-    })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
-    });
-});
-
-app.get("/api/stuff/:id", (req, res, next) => {
-  Thing.findOne({ _id: req.params.id })
-    .then((thing) => {
-      res.status(200).json(thing);
-    })
-    .catch((error) => {
-      res.status(400).json({ error: error });
-    });
-});
-
-app.put("/api/stuff/:id", (req, res, next) => {
-  const thing = new Thing({
-    _id: req.params.id,
-    title: req.body.title,
-    description: req.body.description,
-    imageUrl: req.body.imageUrl,
-    price: req.body.price,
-    userId: req.body.userId,
-  });
-
-  Thing.updateOne({ _id: req.params.id }, thing)
-    .then(() => {
-      res.status(201).json({
-        message: "Thing updated successfully!",
-      });
-    })
-    .catch((error) => {
-      res.status(400).json({ error: error });
-    });
-});
-
-app.delete("/api/stuff/:id", (req, res, next) => {
-  Thing.deleteOne({ _id: req.params.id })
-    .then(() => {
-      res.status(200).json({ message: "Thing deleted successfully" });
-    })
-    .catch((error) => {
-      res.status(400).json({ error: error });
-    });
-});
-
-app.use("/api/stuff", (req, res, next) => {
-  Thing.find()
-    .then((things) => {
-      res.status(200).json(things);
-    })
-    .catch((error) => {
-      res.status(404).json({ error: error });
-    });
-});
+app.use("/api/stuff", stuffRoutes);
 
 module.exports = app;
