@@ -40,6 +40,17 @@ exports.updateThing = (req, res, next) => {
   let thing = new Thing({ _id: req.params._id });
 
   if (req.file) {
+    Thing.findOne({ _id: req.params.id })
+      .then((thing) => {
+        const filename = thing.imageUrl.split("/images/")[1];
+        fs.unlink(`images/${filename}`, () => {
+          console.log(`file ${filename} deleted successfully`);
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+        res.status(400).json({ error: error });
+      });
     const url = `${req.protocol}://${req.get("host")}`;
     req.body.thing = JSON.parse(req.body.thing);
     thing = {
