@@ -1,3 +1,4 @@
+const fs = require("fs");
 const Thing = require("../models/thing");
 
 exports.createThing = (req, res, next) => {
@@ -71,11 +72,21 @@ exports.updateThing = (req, res, next) => {
 };
 
 exports.deleteThing = (req, res, next) => {
-  Thing.deleteOne({ _id: req.params.id })
-    .then(() => {
-      res.status(200).json({ message: "Thing deleted successfully" });
+  Thing.findOne({ _id: req.params.id })
+    .then((thing) => {
+      const filename = thing.imageUrl.split("/images/")[1];
+      fs.unlink(`images/${filename}`, () => {
+        Thing.deleteOne({ _id: req.params.id })
+          .then(() => {
+            res.status(200).json({ message: "Thing deleted successfully" });
+          })
+          .catch((error) => {
+            res.status(400).json({ error: error });
+          });
+      });
     })
     .catch((error) => {
+      console.log(error);
       res.status(400).json({ error: error });
     });
 };
